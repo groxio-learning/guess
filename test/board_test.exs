@@ -30,5 +30,4 @@ defmodule BoardTest do
       
     assert actual == expected
   end
-  
 end
