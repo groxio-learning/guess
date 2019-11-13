@@ -1,13 +1,53 @@
 defmodule Guess.Boundary do
   alias Guess.{Board, Score}
+  use GenServer
   
+  # api
+  
+  def init(initial_game) do
+    {:ok, initial_game}
+  end
+  
+  def start_link(game) do
+    GenServer.start_link(__MODULE__, game)
+  end
+  
+  def move(pid, guess) do
+    GenServer.call(pid, {:move, guess})
+  end
+
+  def status(pid) do
+    GenServer.call(pid, :status)
+  end
+  
+  def finished?(pid) do
+    GenServer.call(pid, :finished)
+  end
+  
+  # service
+  
+  def handle_call({:move, guess}, _from, board) do
+    {:reply, :ok, Board.move(board, guess)}
+  end
+  
+  def handle_call(:status, _from, board) do
+    {:reply, render(board), board}
+  end
+  
+  def handle_call(:finished, _from, board) do
+    {:reply, Board.won?(board), board}
+  end
+
+  # Presentation
   def random_guess() do
-    (1..8)
-    |> Enum.shuffle
-    |> Enum.take(4)
-  end 
+    secret = 
+      (1..8)
+      |> Enum.shuffle
+      |> Enum.take(4)
+      [secret: secret]
+  end
   
-  def to_string(board) do
+  def render(board) do
     """
     #{rows_to_string(board)}
     
